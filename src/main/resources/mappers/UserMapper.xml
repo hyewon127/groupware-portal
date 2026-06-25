@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MyBatis Mapper 파일임을 선언 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace = UserMapper 인터페이스 경로와 반드시 일치해야 함 -->
+<!-- MyBatis가 이걸 보고 어떤 인터페이스랑 연결할지 찾아냄 -->
+<mapper namespace="com.groupware.user.UserMapper">
+
+    <!-- id = UserMapper.java 의 메서드명과 반드시 일치해야 함 -->
+    <!-- parameterType = 메서드에서 받는 파라미터 타입 -->
+    <!-- resultType = 조회 결과를 담을 VO (mapper-config.xml에서 alias 설정한 것) -->
+    <select id="selectUserById" parameterType="String" resultType="userVO">
+        SELECT user_id,
+               team_id,
+               user_pw,
+               user_name,
+               email,
+               role,
+               created_at
+        FROM USERS
+        WHERE user_id = #{userId}
+        <!-- #{userId} = parameterType으로 받은 값을 여기에 바인딩 -->
+        <!-- AND deleted_at IS NULL = 삭제된 사용자는 조회 안 함 (소프트 딜리트) -->
+          AND deleted_at IS NULL
+    </select>
+
+</mapper>
