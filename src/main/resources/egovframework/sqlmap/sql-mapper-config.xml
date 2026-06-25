@@ -10,5 +10,7 @@
 			type="org.egovframe.rte.psl.dataaccess.util.EgovMap" />
 		<!-- vo 추가될 때 마다 여기에 경로 추가해야 함!  -->
 		<typeAlias alias="userVO"   type="com.groupware.user.UserVO" />
+		<typeAlias alias="noticeVO"     type="com.groupware.notice.NoticeVO"/>
+		<typeAlias alias="noticeReadVO" type="com.groupware.notice.NoticeReadVO"/>
     </typeAliases>
 </configuration>
