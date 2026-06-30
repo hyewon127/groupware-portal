@@ -86,4 +86,52 @@
         FROM NOTICE_READ
         WHERE notice_id = #{noticeId}
    	 </select>
+   	 
+   	 <!--  파일 업로드 -->
+   	 <insert id="insertAttachFile" parameterType="AttachFileVO">
+   	 	INSERT INTO ATTACH_FILE (file_id, ref_type, ref_id, orig_name, save_path, file_size)
+   	 	VALUES (seq_attach.NEXTVAL, #{refType}, #{refId}, #{origName}, #{savePath}, #{fileSize}) 
+   	 </insert>
+   	 
+   	 <!--  파일 목록 조회 -->
+   	 <select id="selectAttachFileList" parameterType="int" resultType="AttachFileVO">
+   	 	 SELECT file_id,
+           		ref_type,
+          		ref_id,
+           		orig_name,
+           		save_path,
+           		file_size,
+           		uploaded_at
+	    FROM ATTACH_FILE
+	    WHERE ref_id = #{refId}
+	    AND ref_type = 'NOTICE'
+	    AND deleted_at IS NULL
+   	 </select>
+   	 <!-- 파일 정보 조회 -->
+   	 <select id="selectAttachFile" parameterType="int" resultType="AttachFileVO">
+   	 	SELECT file_id,
+           		ref_type,
+          		ref_id,
+           		orig_name,
+           		save_path,
+           		file_size,
+           		uploaded_at
+	    FROM ATTACH_FILE
+	    WHERE file_id = #{fileId}
+	    AND deleted_at IS NULL
+   	 </select>
+   	 
+   	 <!-- 공지사항 등록 + 생성된 PK를 noticeVO.noticeId에 자동 세팅 -->
+	<insert id="insertNotice" parameterType="NoticeVO">
+
+	    <!-- selectKey: INSERT 실행 전에 시퀀스에서 PK를 먼저 가져와서
+	         NoticeVO의 noticeId 필드에 넣어줌
+	         → 컨트롤러에서 noticeVO.getNoticeId()로 바로 꺼내 쓸 수 있음 -->
+	    <selectKey keyProperty="noticeId" resultType="int" order="BEFORE">
+	        SELECT seq_notice.NEXTVAL FROM DUAL
+	    </selectKey>
+
+	    INSERT INTO NOTICE (notice_id, writer_id, title, content)
+	    VALUES (#{noticeId}, #{writerId}, #{title}, #{content})
+	</insert>
 </mapper>

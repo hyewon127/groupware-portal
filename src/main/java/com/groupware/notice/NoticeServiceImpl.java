@@ -63,6 +63,31 @@ public class NoticeServiceImpl implements NoticeService {
 		// 읽은 사람 수
 		return noticeMapper.selectReadCnt(noticeId);
 	}
+
+	@Override
+	public void insertAttachFile(AttachFileVO attachFileVO) {
+		// 파일 업로드 
+		noticeMapper.insertAttachFile(attachFileVO);
+		
+	}
+
+	@Override
+	public List<AttachFileVO> selectAttachFileList(int refId) {
+		// 파일 목록
+		return noticeMapper.selectAttachFileList(refId);
+	}
+
+	@Override
+	public AttachFileVO selectAttachFile(int fileId) {
+		return noticeMapper.selectAttachFile(fileId);
+	}
+
+	@Override
+	public void deleteAttachFile(int fileId) {
+		noticeMapper.deleteAttachFile(fileId);
+		
+	}
+	
 	
 	
 }

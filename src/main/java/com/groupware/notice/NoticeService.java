@@ -30,4 +30,16 @@ public interface NoticeService {
 		
 		// 읽은 사람 수
 		int selectReadCnt(int noticeId);
+		
+		// 파일 업로드
+		void insertAttachFile(AttachFileVO attachFileVO);
+		
+		// 파일 목록
+		List<AttachFileVO> selectAttachFileList(int refId);
+		
+		// 파일 조회
+		AttachFileVO selectAttachFile(int fileId);
+		
+		// 파일 삭제
+		void deleteAttachFile(int fileId);
 }

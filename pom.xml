@@ -161,6 +161,24 @@
 			<artifactId>ojdbc8</artifactId>
 			<version>21.1.0.0</version>
 		</dependency>
+		<!-- 파일 업로드 처리 라이브러리 
+     브라우저에서 전송된 multipart/form-data 형식의 파일을 
+     Java 에서 MultipartFile 객체로 받을 수 있게 해줌 -->
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.5</version>
+		</dependency>
+
+		<!-- 파일 입출력 편의 라이브러리
+     파일 저장, 복사, 삭제 등을 간편하게 처리해줌
+     commons-fileupload 가 내부적으로 의존함 -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.15.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
