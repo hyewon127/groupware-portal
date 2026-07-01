@@ -12,6 +12,8 @@
 		<typeAlias alias="userVO"   type="com.groupware.user.UserVO" />
 		<typeAlias alias="noticeVO"     type="com.groupware.notice.NoticeVO"/>
 		<typeAlias alias="noticeReadVO" type="com.groupware.notice.NoticeReadVO"/>
-		<typeAlias alias="AttachFileVO" type="com.groupware.notice.AttachFileVO"/>
+		<typeAlias alias="NoticeAttachFileVO" type="com.groupware.notice.AttachFileVO"/>
+		<typeAlias alias="boardVO" type="com.groupware.board.BoardVO"/>
+		<typeAlias alias="BoardAttachFileVO" type="com.groupware.board.AttachFileVO"/>
     </typeAliases>
 </configuration>
