@@ -15,5 +15,6 @@
 		<typeAlias alias="NoticeAttachFileVO" type="com.groupware.notice.AttachFileVO"/>
 		<typeAlias alias="boardVO" type="com.groupware.board.BoardVO"/>
 		<typeAlias alias="BoardAttachFileVO" type="com.groupware.board.AttachFileVO"/>
+		<typeAlias alias="commentVO" type="com.groupware.board.CommentVO"/>
     </typeAliases>
 </configuration>

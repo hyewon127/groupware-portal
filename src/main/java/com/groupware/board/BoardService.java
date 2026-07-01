@@ -41,4 +41,13 @@ public interface BoardService {
 		
 		// 파일 삭제
 		void deleteAttachFile(int fileId);
+		
+		// 댓글 등록
+		void insertComment(CommentVO commentVO);
+		
+		// 댓글 목록 조회
+		List<CommentVO> selectCommentList(int boardId);
+		
+		// 댓글 삭제
+		void deleteComment(int commentId);
 }

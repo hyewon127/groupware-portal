@@ -4,6 +4,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <c:set var="pageTitle" value="게시판" />
 <%@ include file="/WEB-INF/views/common/header.jsp"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
 	<h4 class="fw-bold mb-0">게시판 상세</h4>
@@ -66,6 +67,59 @@
 			<c:if test="${empty fileList}">
 				<span class="text-muted">첨부파일 없음</span>
 			</c:if>
+		</div>
+		<!-- 댓글 영역 -->
+		<div class="mt-4">
+			<h6 class="fw-bold mb-3">댓글 ${fn:length(commentList)}개</h6>
+
+			<!-- 댓글 목록 -->
+			<c:choose>
+				<c:when test="${empty commentList}">
+					<p class="text-muted small">등록된 댓글이 없습니다.</p>
+				</c:when>
+				<c:otherwise>
+					<c:forEach var="comment" items="${commentList}">
+						<div class="border rounded p-3 mb-2 bg-light">
+							<div
+								class="d-flex justify-content-between align-items-center mb-1">
+								<span class="fw-bold small">${comment.writerName}</span>
+								<div class="d-flex gap-2 align-items-center">
+									<span class="text-muted small"> <fmt:formatDate
+											value="${comment.createdAt}" pattern="yyyy.MM.dd HH:mm" />
+									</span>
+									<%-- 본인 댓글이거나 관리자면 삭제 버튼 표시 --%>
+									<c:if
+										test="${comment.writerId == loginUser.userId or loginUser.teamId == 7}">
+										<form
+											action="${pageContext.request.contextPath}/board/comment/delete.do"
+											method="post" style="display: inline;"
+											onsubmit="return confirm('댓글을 삭제하시겠습니까?')">
+											<input type="hidden" name="commentId"
+												value="${comment.commentId}" /> <input type="hidden"
+												name="boardId" value="${board.boardId}" />
+											<button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+										</form>
+									</c:if>
+								</div>
+							</div>
+							<p class="mb-0 small">${comment.content}</p>
+						</div>
+					</c:forEach>
+				</c:otherwise>
+			</c:choose>
+
+			<!-- 댓글 등록 폼 -->
+			<form
+				action="${pageContext.request.contextPath}/board/comment/insert.do"
+				method="post">
+				<input type="hidden" name="boardId" value="${board.boardId}" />
+				<div class="input-group mt-3">
+					<input type="text" name="content" class="form-control"
+						placeholder="댓글을 입력하세요" required />
+					<button type="submit" class="btn btn-sm"
+						style="background-color: #F96167; color: white;">등록</button>
+				</div>
+			</form>
 		</div>
 	</div>
 </div>

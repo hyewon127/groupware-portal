@@ -89,5 +89,25 @@ public class BoardServiceImpl implements BoardService {
 		// 관리자용 게시물 조회
 		return boardMapper.selectBoardDetailById(boardId);
 	}
+
+	@Override
+	public void insertComment(CommentVO commentVO) {
+		// 댓글 등록
+		boardMapper.insertComment(commentVO);
+		
+	}
+
+	@Override
+	public List<CommentVO> selectCommentList(int boardId) {
+		// 댓글 목록 조회
+		return boardMapper.selectCommentList(boardId);
+	}
+
+	@Override
+	public void deleteComment(int commentId) {
+		// 댓글 삭제
+		boardMapper.deleteComment(commentId);
+		
+	}
 	
 }

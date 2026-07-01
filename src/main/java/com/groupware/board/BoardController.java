@@ -177,6 +177,10 @@ public class BoardController {
 		List<AttachFileVO> fileList = boardService.selectAttachFileList(boardId);
 		model.addAttribute("fileList", fileList); 
 		
+		// 댓글 목록 조회
+		List<CommentVO> commentList = boardService.selectCommentList(boardId);
+		model.addAttribute("commentList", commentList);
+		
 		return "board/detail";
 	}
 	
@@ -306,7 +310,39 @@ public class BoardController {
 		
 	}
 	
+	// 댓글 등록
+	@RequestMapping(value="/comment/insert.do", method=RequestMethod.POST)
+	public String insertcomment(@RequestParam int boardId,
+									@RequestParam String content,
+									HttpSession session) throws Exception{
+		
+		UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+		
+		CommentVO commentVO = new CommentVO();
+		commentVO.setBoardId(boardId);
+		commentVO.setWriterId(loginUser.getUserId());
+		commentVO.setContent(content);
+		
+		boardService.insertComment(commentVO);
+		
+		// 댓글 등록 후 해당 게시글 상세로 들어감
+		return "redirect:/board/detail.do?boardId="+ boardId;
+	}
 	
+	// 댓글 삭제
+	@RequestMapping(value="/comment/delete.do", method=RequestMethod.POST)
+	public String deletecomment(@RequestParam int commentId,
+								@RequestParam int boardId,
+								Model model) throws Exception{
+		
+		boardService.deleteComment(commentId); 
+		
+		List<CommentVO> commentList = boardService.selectCommentList(boardId);
+		model.addAttribute("commentList", commentList);
+		
+		// 원래 게시물 
+		return "redirect:/board/detail.do?boardId="+ boardId;
+	}
 	
 	
 }
