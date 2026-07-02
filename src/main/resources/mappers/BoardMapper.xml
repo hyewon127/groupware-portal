@@ -54,7 +54,7 @@
 	</select>
 
 	<!--  상세 조회 -->
-	<select id="selectBoardDetail" parameterType="int" resultType="boardVO">
+	<select id="selectBoardDetail" resultType="boardVO">
 		SELECT b.board_id,
 			   b.team_id,
 			   b.writer_id,
@@ -99,7 +99,7 @@
 	    </selectKey>
 	    INSERT INTO BOARD (board_id, team_id, writer_id, title, content)
 	    VALUES (#{boardId}, #{teamId}, #{writerId}, #{title}, #{content})
-</insert>
+    </insert>
 	
 	<!-- 게시판 수정 -->
 	<update id="updateBoard" parameterType="boardVO">

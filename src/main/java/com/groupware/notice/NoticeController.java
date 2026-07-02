@@ -112,7 +112,7 @@ public class NoticeController {
 	
 	// 상세 조회
 	@RequestMapping(value = "/detail.do", method=RequestMethod.GET)
-	public String datail(@RequestParam int noticeId,
+	public String detail(@RequestParam int noticeId,
 						HttpSession session,
 						Model model) throws Exception{
 		// 조회수 증가
