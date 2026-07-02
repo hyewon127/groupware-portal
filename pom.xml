@@ -179,6 +179,12 @@
 			<version>2.15.1</version>
 		</dependency>
 
+		<!-- Jackson Databind: Java 객체 ↔ JSON 자동 변환 라이브러리	 -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.15.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>

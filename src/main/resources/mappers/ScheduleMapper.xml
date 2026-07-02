@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MyBatis Mapper 파일임을 선언 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace = ScheduleMapper 인터페이스 경로와 반드시 일치해야 함 -->
+<!-- MyBatis가 이걸 보고 어떤 인터페이스랑 연결할지 찾아냄 -->
+<mapper namespace="com.groupware.schedule.ScheduleMapper">
+
+	<!-- 전체 스케줄 목록 -->
+	<!-- TO_CHAR 포맷에 "T" 포함 → FullCalendar ISO 8601 형식과 호환 -->
+	<select id="selectScheduleList" resultType="scheduleVO">
+		SELECT s.schedule_id,
+			   s.user_id,
+			   u.user_name AS writer_name,
+			   s.title,
+			   TO_CHAR(s.start_dt, 'YYYY-MM-DD"T"HH24:MI') AS start_dt,
+			   TO_CHAR(s.end_dt,   'YYYY-MM-DD"T"HH24:MI') AS end_dt,
+			   s.color,
+			   s.type,
+			   s.team_id,
+			   s.created_at
+		FROM SCHEDULE s
+		JOIN USERS u ON s.user_id = u.user_id
+		WHERE s.deleted_at IS NULL
+		AND (
+			<!-- 개인 일정: 본인 것만 조회 -->
+			(s.user_id = #{userId} AND s.type = 'PERSONAL')
+			OR
+			<!-- 팀 일정: 같은 팀원만 조회 (본인 팀 ID 와 일치하는 것만) -->
+			(s.team_id = #{teamId} AND s.type = 'TEAM')
+		)
+	</select>
+
+	<!-- 일정 등록 -->
+	<!-- TO_DATE: 'YYYY-MM-DDTHH24:MI' 문자열 → Oracle DATE 로 변환 -->
+	<insert id="insertSchedule" parameterType="scheduleVO">
+		<selectKey keyProperty="scheduleId" resultType="int" order="BEFORE">
+	        SELECT seq_schedule.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO SCHEDULE (schedule_id, user_id, title, start_dt, end_dt, color, type, team_id)
+		VALUES (
+			#{scheduleId},
+			#{userId},
+			#{title},
+			TO_DATE(#{startDt}, 'YYYY-MM-DD"T"HH24:MI'),
+			TO_DATE(#{endDt},   'YYYY-MM-DD"T"HH24:MI'),
+			#{color},
+			#{type},
+			#{teamId, jdbcType=NUMERIC}
+		)
+	</insert>
+
+	<!-- 일정 수정 (제목, 기간, 색상, 구분, 팀번호 변경) -->
+	<update id="updateSchedule" parameterType="scheduleVO">
+		UPDATE SCHEDULE SET
+			title    = #{title},
+			start_dt = TO_DATE(#{startDt}, 'YYYY-MM-DD"T"HH24:MI'),
+			end_dt   = TO_DATE(#{endDt},   'YYYY-MM-DD"T"HH24:MI'),
+			color    = #{color},
+			type     = #{type},
+			team_id  = #{teamId, jdbcType=NUMERIC}
+		WHERE schedule_id = #{scheduleId}
+	</update>
+
+	<!-- 일정 삭제 (소프트 삭제: deleted_at 에 현재 시각 기록) -->
+	<update id="deleteSchedule" parameterType="int">
+		UPDATE SCHEDULE SET
+			deleted_at = SYSDATE
+		WHERE schedule_id = #{scheduleId}
+	</update>
+
+</mapper>
