@@ -20,7 +20,8 @@
                n.view_cnt,
                n.created_at
         FROM NOTICE n
-        JOIN USERS u ON n.writer_id = u.user_id
+        JOIN USERS u 
+        ON n.writer_id = u.user_id
         WHERE n.deleted_at IS NULL
         ORDER BY n.notice_id DESC
     </select> 
@@ -35,16 +36,25 @@
                n.view_cnt,
                n.created_at
         FROM NOTICE n
-        JOIN USERS u ON n.writer_id = u.user_id
+        JOIN USERS u 
+        ON n.writer_id = u.user_id
         WHERE n.notice_id = #{noticeId}
         AND n.deleted_at IS NULL
     </select>
     
-    <!-- 등록 - PK는 시퀀스로 자동 생성, created_at은 DB DEFAULT 사용 -->
-    <insert id="insertNotice" parameterType="noticeVO">
-    	INSERT INTO NOTICE (notice_id, writer_id, title, content)
-    	VALUES (seq_notice.NEXTVAL, #{writerId},#{title},#{content}) 
-    </insert>
+   	 <!-- 공지사항 등록 + 생성된 PK를 noticeVO.noticeId에 자동 세팅 -->
+	<insert id="insertNotice" parameterType="noticeVO">
+
+	    <!-- selectKey: INSERT 실행 전에 시퀀스에서 PK를 먼저 가져와서
+	         NoticeVO의 noticeId 필드에 넣어줌
+	         → 컨트롤러에서 noticeVO.getNoticeId()로 바로 꺼내 쓸 수 있음 -->
+	    <selectKey keyProperty="noticeId" resultType="int" order="BEFORE">
+	        SELECT seq_notice.NEXTVAL FROM DUAL
+	    </selectKey>
+
+	    INSERT INTO NOTICE (notice_id, writer_id, title, content)
+	    VALUES (#{noticeId}, #{writerId}, #{title}, #{content})
+	</insert>
     
     <!-- 수정 - 제목이랑 내용만 수정 가능 -->
     <update id="updateNotice" parameterType="noticeVO">
@@ -88,13 +98,13 @@
    	 </select>
    	 
    	 <!--  파일 업로드 -->
-   	 <insert id="insertAttachFile" parameterType="AttachFileVO">
+   	 <insert id="insertAttachFile" parameterType="NoticeAttachFileVO">
    	 	INSERT INTO ATTACH_FILE (file_id, ref_type, ref_id, orig_name, save_path, file_size)
    	 	VALUES (seq_attach.NEXTVAL, #{refType}, #{refId}, #{origName}, #{savePath}, #{fileSize}) 
    	 </insert>
    	 
    	 <!--  파일 목록 조회 -->
-   	 <select id="selectAttachFileList" parameterType="int" resultType="AttachFileVO">
+   	 <select id="selectAttachFileList" parameterType="int" resultType="NoticeAttachFileVO">
    	 	 SELECT file_id,
            		ref_type,
           		ref_id,
@@ -108,7 +118,7 @@
 	    AND deleted_at IS NULL
    	 </select>
    	 <!-- 파일 정보 조회 -->
-   	 <select id="selectAttachFile" parameterType="int" resultType="AttachFileVO">
+   	 <select id="selectAttachFile" parameterType="int" resultType="NoticeAttachFileVO">
    	 	SELECT file_id,
            		ref_type,
           		ref_id,
@@ -121,17 +131,11 @@
 	    AND deleted_at IS NULL
    	 </select>
    	 
-   	 <!-- 공지사항 등록 + 생성된 PK를 noticeVO.noticeId에 자동 세팅 -->
-	<insert id="insertNotice" parameterType="NoticeVO">
-
-	    <!-- selectKey: INSERT 실행 전에 시퀀스에서 PK를 먼저 가져와서
-	         NoticeVO의 noticeId 필드에 넣어줌
-	         → 컨트롤러에서 noticeVO.getNoticeId()로 바로 꺼내 쓸 수 있음 -->
-	    <selectKey keyProperty="noticeId" resultType="int" order="BEFORE">
-	        SELECT seq_notice.NEXTVAL FROM DUAL
-	    </selectKey>
-
-	    INSERT INTO NOTICE (notice_id, writer_id, title, content)
-	    VALUES (#{noticeId}, #{writerId}, #{title}, #{content})
-	</insert>
+   	 <!-- 파일 삭제(소프트 삭제) -->
+   	<update id="deleteAttachFile" parameterType="int">
+   		UPDATE ATTACH_FILE
+		SET deleted_at = SYSDATE 
+		WHERE FILE_ID = #{fileId}
+   	</update>
+   
 </mapper>
