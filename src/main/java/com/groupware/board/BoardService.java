@@ -28,7 +28,7 @@ public interface BoardService {
 		void updateBoard(BoardVO boardVO);
 		
 		// 게시물 삭제(소프트 삭제)
-		void deleteBoard(int boardId);
+		void deleteBoard(int boardId); 
 		
 		// 파일 업로드
 		void insertAttachFile(AttachFileVO attachFileVO);

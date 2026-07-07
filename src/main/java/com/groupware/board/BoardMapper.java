@@ -7,7 +7,7 @@ import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 
 @Mapper
-public interface BoardMapper {
+public interface BoardMapper { 
 	// 게시판 목족 조회(전체 조회)
 	List<BoardVO> selectAllBoardList();
 	

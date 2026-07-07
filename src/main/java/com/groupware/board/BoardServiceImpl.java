@@ -63,7 +63,7 @@ public class BoardServiceImpl implements BoardService {
 	public AttachFileVO selectAttachFile(int fileId) {
 		// 파일 조회
 		return boardMapper.selectAttachFile(fileId);
-	}
+	} 
 
 	@Override
 	public void deleteAttachFile(int fileId) {
