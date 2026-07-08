@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 대시보드 전용 Mapper. namespace 는 DashboardMapper 인터페이스 경로와 일치 -->
+<mapper namespace="com.groupware.main.DashboardMapper">
+
+    <!-- ============================================================= -->
+    <!-- [카드1] 안 읽은 공지 개수                                       -->
+    <!--  - 삭제되지 않은 공지 중에서                                    -->
+    <!--  - NOTICE_READ 에 (그 공지 + 나) 기록이 없는 것 = 아직 안 읽음  -->
+    <!--  - NOT EXISTS: 서브쿼리 결과가 없을 때만 true                   -->
+    <!-- ============================================================= -->
+    <select id="countUnreadNotice" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM NOTICE n
+        WHERE n.deleted_at IS NULL
+          AND NOT EXISTS (
+              SELECT 1
+              FROM NOTICE_READ r
+              WHERE r.notice_id = n.notice_id
+                AND r.user_id   = #{userId}
+          )
+    </select>
+
+    <!-- ============================================================= -->
+    <!-- [카드2] 안 읽은 쪽지 개수 (내가 받은 것 중 is_read = 'N')       -->
+    <!-- ============================================================= -->
+    <select id="countUnreadMessage" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM MESSAGE
+        WHERE receiver_id = #{userId}
+          AND is_read = 'N'
+          AND deleted_at IS NULL
+    </select>
+
+    <!-- ============================================================= -->
+    <!-- [카드3] 오늘 일정 개수 (개인 일정 + 우리 팀 일정)               -->
+    <!--  - TRUNC(SYSDATE): 오늘 0시 (시간 제거)                        -->
+    <!--  - NVL(end_dt, start_dt): 종료일이 없으면 시작일로 대체        -->
+    <!--  - 오늘이 [시작일 ~ 종료일] 범위 안에 있으면 오늘 일정으로 카운트-->
+    <!-- ============================================================= -->
+    <select id="countTodaySchedule" resultType="int">
+        SELECT COUNT(*)
+        FROM SCHEDULE
+        WHERE deleted_at IS NULL
+          AND TRUNC(SYSDATE) BETWEEN TRUNC(start_dt) AND TRUNC(NVL(end_dt, start_dt))
+          AND (
+                (user_id = #{userId} AND type = 'PERSONAL')
+             OR (team_id = #{teamId} AND type = 'TEAM')
+          )
+    </select>
+
+    <!-- ============================================================= -->
+    <!-- [카드4] 이번 주 우리 팀 게시글 개수                             -->
+    <!--  - TRUNC(SYSDATE, 'IW'): 이번 주 월요일 0시                    -->
+    <!-- ============================================================= -->
+    <select id="countWeekBoard" parameterType="int" resultType="int">
+        SELECT COUNT(*)
+        FROM BOARD
+        WHERE team_id = #{teamId}
+          AND deleted_at IS NULL
+          AND created_at >= TRUNC(SYSDATE, 'IW')
+    </select>
+
+    <!-- ============================================================= -->
+    <!-- [최근 공지] 최신 공지 3건 (작성자명은 USERS JOIN 으로)          -->
+    <!--  - FETCH FIRST 3 ROWS ONLY: Oracle 12c 이상에서 상위 N건 조회  -->
+    <!-- ============================================================= -->
+    <select id="selectRecentNoticeList" resultType="noticeVO">
+        SELECT n.notice_id,
+               n.writer_id,
+               u.user_name AS writer_name,
+               n.title,
+               n.view_cnt,
+               n.created_at
+        FROM NOTICE n
+        JOIN USERS u ON n.writer_id = u.user_id
+        WHERE n.deleted_at IS NULL
+        ORDER BY n.notice_id DESC
+        FETCH FIRST 3 ROWS ONLY
+    </select>
+
+    <!-- ============================================================= -->
+    <!-- [일정 미니뷰] 오늘 이후 다가오는 내 일정 5건                    -->
+    <!--  - 종료일(없으면 시작일)이 오늘 이후인 일정만                   -->
+    <!--  - 시작일 빠른 순으로 정렬                                      -->
+    <!-- ============================================================= -->
+    <select id="selectUpcomingScheduleList" resultType="ScheduleVO">
+        SELECT s.schedule_id,
+               s.user_id,
+               s.title,
+               TO_CHAR(s.start_dt, 'YYYY-MM-DD') AS start_dt,
+               TO_CHAR(s.end_dt,   'YYYY-MM-DD') AS end_dt,
+               s.color,
+               s.type
+        FROM SCHEDULE s
+        WHERE s.deleted_at IS NULL
+          AND TRUNC(NVL(s.end_dt, s.start_dt)) >= TRUNC(SYSDATE)
+          AND (
+                (s.user_id = #{userId} AND s.type = 'PERSONAL')
+             OR (s.team_id = #{teamId} AND s.type = 'TEAM')
+          )
+        ORDER BY s.start_dt ASC
+        FETCH FIRST 5 ROWS ONLY
+    </select>
+
+</mapper>
