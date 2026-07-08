@@ -85,7 +85,7 @@
                                         <span class="text-danger small">[댓글 ${board.commentCnt}]</span>
                               		</c:if>
                                     <%-- 첨부파일이 있으면 클립 이모지 표시 --%>
-                                    <c:if test="${board.attachCnt > 0}">📎</c:if>
+                                    <c:if test="${board.attachCnt > 0}"> 🗂️ </c:if>
                                 </td>
                                 <td class="text-center">${board.writerName}</td>
                                 <td class="text-center">

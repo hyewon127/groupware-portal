@@ -61,8 +61,8 @@
                                 <td class="text-center">${notice.noticeId}</td>
                                 <td>
                                     ${notice.title}
-                                    <%-- 첨부파일이 있으면 제목 옆에 클립 이모지 표시 --%>
-                                    <c:if test="${notice.attachCnt > 0}">📎</c:if>
+                                   <%-- 첨부파일이 있으면 클립 이모지 표시 --%>
+                                   <c:if test="${notice.attachCnt > 0}"> 🗂️ </c:if>
                                 </td>
                                 <td class="text-center">${notice.writerName}</td>
                                 <td class="text-center">
@@ -70,7 +70,7 @@
                                 </td>
                                 <%-- 읽은 사람 수 / 전체 직원 수 --%>
                                 <td class="text-center">
-                                    <span class="badge bg-secondary">${notice.readCnt} / ${totalUserCnt}</span>
+                                    <span class="text">${notice.readCnt} / ${totalUserCnt}</span>
                                 </td>
                             </tr>
                         </c:forEach>

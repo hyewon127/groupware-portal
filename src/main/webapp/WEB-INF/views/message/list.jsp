@@ -71,7 +71,7 @@
 								<td class="${msg.isRead == 'N' ? 'fw-bold' : ''}">
 									${msg.title}
 									<%-- 첨부파일이 있으면 클립 이모지 표시 --%>
-									<c:if test="${msg.attachCnt > 0}">📎</c:if>
+                                    <c:if test="${msg.attachCnt > 0}"> 🗂️ </c:if>
 								</td>
 								<td class="text-center"><fmt:formatDate
 										value="${msg.sentAt}" pattern="yyyy.MM.dd HH:mm" /></td>
