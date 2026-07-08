@@ -28,5 +28,8 @@ public class MessageVO {
 	private Date sentAt;
 	// 삭제일(소프트 삭제)
 	private Date deletedAt;
-	
+
+	// 목록에서 첨부파일 유무 표시(이모지)용 — 첨부파일 개수
+	private int attachCnt;
+
 }

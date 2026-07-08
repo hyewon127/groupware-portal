@@ -13,22 +13,52 @@ public class MessageServiceImpl implements MessageService{
 	private MessageMapper messageMapper;
 
 	@Override
-	public List<MessageVO> selectMessageSenderList(String userId) {
-		// 보낸 쪽지 목록
-		return messageMapper.selectMessageSenderList(userId);
+	public List<MessageVO> selectMessageSenderList(String userId, int offset, int size) {
+		// 보낸 쪽지 목록 (페이징)
+		return messageMapper.selectMessageSenderList(userId, offset, size);
 	}
 
 	@Override
-	public List<MessageVO> selectMessageReceiverList(String userId) {
-		// 받은 쪽지 목록
-		return messageMapper.selectMessageReceiverList(userId);
+	public List<MessageVO> selectMessageReceiverList(String userId, int offset, int size) {
+		// 받은 쪽지 목록 (페이징)
+		return messageMapper.selectMessageReceiverList(userId, offset, size);
+	}
+
+	@Override
+	public int countMessageSenderList(String userId) {
+		// 보낸 쪽지 총 개수
+		return messageMapper.countMessageSenderList(userId);
+	}
+
+	@Override
+	public int countMessageReceiverList(String userId) {
+		// 받은 쪽지 총 개수
+		return messageMapper.countMessageReceiverList(userId);
 	}
 
 	@Override
 	public void insertMessage(MessageVO messageVO) {
 		// 쪽지 작성
 		messageMapper.insertMessage(messageVO);
-		
+
+	}
+
+	@Override
+	public void insertAttachFile(AttachFileVO attachFileVO) {
+		// 쪽지 첨부파일 등록
+		messageMapper.insertAttachFile(attachFileVO);
+	}
+
+	@Override
+	public List<AttachFileVO> selectAttachFileList(int refId) {
+		// 쪽지 첨부파일 목록 조회
+		return messageMapper.selectAttachFileList(refId);
+	}
+
+	@Override
+	public AttachFileVO selectAttachFile(int fileId) {
+		// 쪽지 첨부파일 단건 조회 (다운로드용)
+		return messageMapper.selectAttachFile(fileId);
 	}
 
 	@Override

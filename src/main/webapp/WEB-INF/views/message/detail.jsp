@@ -22,10 +22,26 @@
 			<span>작성일: <fmt:formatDate value="${message.sentAt}" pattern="yyyy.MM.dd HH:mm" /></span> 
 		</div>
 		
-		<!-- 본문 -->
-		<div class="mb-3" style="min-height: 200px; white-space: left;">
+		<!-- 본문 (pre-line: 입력한 줄바꿈 그대로 표시) -->
+		<div class="mb-3" style="min-height: 200px; white-space: pre-line;">
 			${message.content}</div>
-			
+
+		<!-- 첨부파일 목록 (있을 때만 표시) -->
+		<c:if test="${not empty fileList}">
+			<div class="border-top pt-3 mb-3">
+				<div class="fw-bold small mb-2"><i class="bi bi-paperclip"></i> 첨부파일</div>
+				<ul class="list-group">
+					<c:forEach var="file" items="${fileList}">
+						<li class="list-group-item d-flex justify-content-between align-items-center">
+							<span>📎 ${file.origName}</span>
+							<a href="${pageContext.request.contextPath}/message/download.do?fileId=${file.fileId}"
+							   class="btn btn-sm btn-outline-secondary">다운로드</a>
+						</li>
+					</c:forEach>
+				</ul>
+			</div>
+		</c:if>
+
 		<!-- 답장/목록 버튼 -->
 		<div class="d-flex justify-content-end gap-2 mt-3">
 

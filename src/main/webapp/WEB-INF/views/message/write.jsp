@@ -63,6 +63,11 @@
 				<textarea name="content" class="form-control" rows="15"
 					placeholder="내용을 입력하세요" required>${message.content}</textarea>
 			</div>
+			<!--  첨부파일 (여러 개 선택 가능, name 은 컨트롤러 uploadFiles 와 일치) -->
+			<div class="mb-3">
+				<label class="form-label fw-bold">첨부파일</label>
+				<input type="file" name="uploadFiles" class="form-control" multiple>
+			</div>
 			<!-- 쪽지 버튼 -->
 			<div class="d-flex gap-2 justify-content-end">
 				<a href="${pageContext.request.contextPath}/message/list.do"

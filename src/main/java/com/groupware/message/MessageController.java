@@ -1,7 +1,14 @@
 package com.groupware.message;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.UUID;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.groupware.user.UserVO;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,22 +30,36 @@ public class MessageController {
 	@Autowired
 	private MessageService messageService;
 	
-	// 받은 쪽지, 보낸 쪽지 화면
+	// 받은 쪽지, 보낸 쪽지 화면 (페이징)
 	@RequestMapping(value = "/list.do", method=RequestMethod.GET)
 	public String list(@RequestParam(defaultValue = "received") String type,
-					   HttpSession session, 
+					   @RequestParam(defaultValue = "1") int page,
+					   HttpSession session,
 					   Model model) throws Exception {
 	    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+	    String userId = loginUser.getUserId();
+
+	    int size = 10;                    // 한 페이지 건수
+	    int offset = (page - 1) * size;   // 건너뛸 행 수
 
 	    List<MessageVO> list;
+	    int totalCount;
 	    if ("sent".equals(type)) {
-	        list = messageService.selectMessageSenderList(loginUser.getUserId());
+	        list = messageService.selectMessageSenderList(userId, offset, size);
+	        totalCount = messageService.countMessageSenderList(userId);
 	    } else {
-	        list = messageService.selectMessageReceiverList(loginUser.getUserId());
+	        list = messageService.selectMessageReceiverList(userId, offset, size);
+	        totalCount = messageService.countMessageReceiverList(userId);
 	    }
+
+	    // 전체 페이지 수 계산 (올림)
+	    int totalPages = (int) Math.ceil((double) totalCount / size);
 
 	    model.addAttribute("list", list);
 	    model.addAttribute("type", type);
+	    model.addAttribute("page", page);
+	    model.addAttribute("totalPages", totalPages);
+	    model.addAttribute("totalCount", totalCount);
 	    return "message/list";
 	}
 	
@@ -66,7 +88,11 @@ public class MessageController {
 		
 		model.addAttribute("message", message);
 		model.addAttribute("type", type);
-	
+
+		// 첨부파일 목록 조회 (상세 화면에서 다운로드 링크 표시용)
+		List<AttachFileVO> fileList = messageService.selectAttachFileList(msgId);
+		model.addAttribute("fileList", fileList);
+
 		return "message/detail";
 	}
 	
@@ -121,16 +147,85 @@ public class MessageController {
 		    return "message/write";
 		}
 
-	// 쪽지 등록 처리
+	// 쪽지 등록 처리 (파일 업로드 포함)
 	@RequestMapping(value = "/write.do", method=RequestMethod.POST)
-	public String write(MessageVO messageVO, HttpSession session) throws Exception {
+	public String write(MessageVO messageVO,
+						@RequestParam(value = "uploadFiles", required = false) MultipartFile[] uploadFiles,
+						HttpSession session,
+						HttpServletRequest request) throws Exception {
 	    UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 	    if (loginUser == null) {
 	        return "redirect:/login.do";
 	    }
 	    messageVO.setSenderId(loginUser.getUserId());
+
+	    // 1. 쪽지 저장 → selectKey 로 messageVO 에 msgId 가 채워짐
 	    messageService.insertMessage(messageVO);
+
+	    // 2. 파일이 하나 이상 첨부된 경우에만 업로드 처리
+	    if (uploadFiles != null && uploadFiles.length > 0) {
+
+	        // 저장 디렉토리 (/upload/message). 공지/게시판과 동일한 패턴
+	        String uploadDir = request.getServletContext().getRealPath("/upload/message");
+	        File dir = new File(uploadDir);
+	        if (!dir.exists()) {
+	            dir.mkdirs();
+	        }
+
+	        for (MultipartFile uploadFile : uploadFiles) {
+	            // 파일 선택 안 한 빈 슬롯은 건너뜀
+	            if (uploadFile.isEmpty()) {
+	                continue;
+	            }
+
+	            String origName = uploadFile.getOriginalFilename();
+	            // UUID 로 저장 파일명 생성 (중복/한글 문제 예방)
+	            String saveName = UUID.randomUUID().toString() + "_" + origName;
+	            String savePath = uploadDir + File.separator + saveName;
+
+	            // 실제 파일을 서버 디스크에 저장
+	            uploadFile.transferTo(new File(savePath));
+
+	            // DB(ATTACH_FILE)에 파일 정보 저장 (ref_type='MESSAGE')
+	            AttachFileVO attachFileVO = new AttachFileVO();
+	            attachFileVO.setRefType("MESSAGE");
+	            attachFileVO.setRefId(messageVO.getMsgId());
+	            attachFileVO.setOrigName(origName);
+	            attachFileVO.setSavePath(savePath);
+	            attachFileVO.setFileSize(uploadFile.getSize());
+	            messageService.insertAttachFile(attachFileVO);
+	        }
+	    }
+
 	    return "redirect:/message/list.do";
 	}
-	
+
+	// 쪽지 첨부파일 다운로드
+	@RequestMapping(value = "/download.do", method=RequestMethod.GET)
+	public void filedownload(@RequestParam int fileId,
+							HttpServletResponse response) throws Exception {
+
+		// 1. DB 에서 파일 정보 조회
+		AttachFileVO file = messageService.selectAttachFile(fileId);
+
+		// 2. 응답 헤더 설정 (한글 파일명 깨짐 방지)
+		String fileName = URLEncoder.encode(file.getOrigName(), "UTF-8");
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+		response.setContentType("application/octet-stream");
+
+		// 3. 서버 파일을 읽어서 브라우저로 전송
+		File serverFile = new File(file.getSavePath());
+		FileInputStream fis = new FileInputStream(serverFile);
+		BufferedOutputStream bos = new BufferedOutputStream(response.getOutputStream());
+
+		byte[] buffer = new byte[1024];
+		int len;
+		while ((len = fis.read(buffer)) != -1) {
+			bos.write(buffer, 0, len);
+		}
+		bos.flush();
+		bos.close();
+		fis.close();
+	}
+
 }

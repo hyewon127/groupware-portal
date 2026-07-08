@@ -9,14 +9,33 @@ import com.groupware.user.UserVO;
 
 @Mapper
 public interface MessageMapper {
-	// 보낸 쪽지 목록
-	List<MessageVO> selectMessageSenderList(String userId);
-	
-	// 받은 쪽지 목록
-	List<MessageVO> selectMessageReceiverList(String userId);
-	
+	// 보낸 쪽지 목록 (페이징)
+	List<MessageVO> selectMessageSenderList(@Param("userId") String userId,
+											@Param("offset") int offset,
+											@Param("size") int size);
+
+	// 받은 쪽지 목록 (페이징)
+	List<MessageVO> selectMessageReceiverList(@Param("userId") String userId,
+											  @Param("offset") int offset,
+											  @Param("size") int size);
+
+	// 보낸 쪽지 총 개수 (페이징 계산용)
+	int countMessageSenderList(String userId);
+
+	// 받은 쪽지 총 개수 (페이징 계산용)
+	int countMessageReceiverList(String userId);
+
 	// 쪽지 작성
 	void insertMessage(MessageVO messageVO);
+
+	// 쪽지 첨부파일 등록
+	void insertAttachFile(AttachFileVO attachFileVO);
+
+	// 쪽지 첨부파일 목록 조회
+	List<AttachFileVO> selectAttachFileList(int refId);
+
+	// 쪽지 첨부파일 단건 조회 (다운로드용)
+	AttachFileVO selectAttachFile(int fileId);
 	
 	// 받은 쪽지 조회
 	MessageVO selectMessageReceiverDetail(@Param("msgId") int msgId, @Param("userId") String userId);
