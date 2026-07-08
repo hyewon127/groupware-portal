@@ -92,6 +92,10 @@
     </a>
     <div class="user-info">
         <span><i class="bi bi-person-circle"></i> ${sessionScope.loginUser.userName} 님</span>
+        <%-- 내 정보(프로필) 관리 페이지 링크 --%>
+        <a href="${pageContext.request.contextPath}/profile.do">
+            <i class="bi bi-person-badge"></i> 내 정보
+        </a>
         <a href="${pageContext.request.contextPath}/logout.do">
             <i class="bi bi-box-arrow-right"></i> 로그아웃
         </a>
@@ -123,6 +127,15 @@
        class="${pageTitle == '쪽지' ? 'active' : ''}">
         <i class="bi bi-envelope"></i> 쪽지함
     </a>
+
+    <%-- 관리자 전용 메뉴: role 이 ADMIN 이거나 관리팀(teamId==7)일 때만 노출 --%>
+    <c:if test="${sessionScope.loginUser.role == 'ADMIN' or sessionScope.loginUser.teamId == 7}">
+        <div class="menu-title">관리자</div>
+        <a href="${pageContext.request.contextPath}/admin/users.do"
+           class="${pageTitle == '관리자설정' ? 'active' : ''}">
+            <i class="bi bi-gear"></i> 관리자 설정
+        </a>
+    </c:if>
 </div>
 
 <!-- 본문 시작 -->
