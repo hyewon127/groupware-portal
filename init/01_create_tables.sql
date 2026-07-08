@@ -99,7 +99,7 @@ CREATE TABLE BOARD_COMMENT (
 
 -- =============================================
 -- 4. 일정 테이블
--- =============================================
+-- ============================================= 
 
 CREATE TABLE SCHEDULE (
     schedule_id   NUMBER          PRIMARY KEY,
@@ -107,11 +107,17 @@ CREATE TABLE SCHEDULE (
     title         VARCHAR2(200)   NOT NULL,
     start_dt      DATE            NOT NULL,
     end_dt        DATE,
-    color         VARCHAR2(20)    DEFAULT '#3788d8',  -- FullCalendar 기본 색상
+    color         VARCHAR2(20)    DEFAULT '#3788d8',
+    type          VARCHAR2(10)    DEFAULT 'PERSONAL',  -- 'PERSONAL'=개인, 'TEAM'=팀
+    team_id       NUMBER,                               -- 팀 일정일 때만 값 있음, 개인이면 NULL
     created_at    DATE            DEFAULT SYSDATE,
     deleted_at    DATE,
-    CONSTRAINT fk_schedule_user FOREIGN KEY (user_id) REFERENCES USERS(user_id)
+    CONSTRAINT fk_schedule_user FOREIGN KEY (user_id) REFERENCES USERS(user_id),
+    CONSTRAINT fk_schedule_team FOREIGN KEY (team_id) REFERENCES TEAM(team_id)
 );
+
+-- 시퀀스 생성
+CREATE SEQUENCE seq_schedule START WITH 1 INCREMENT BY 1;
 
 -- =============================================
 -- 5. 쪽지 테이블
@@ -157,4 +163,59 @@ CREATE SEQUENCE seq_board      START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_comment    START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_schedule   START WITH 1 INCREMENT BY 1 NOCACHE;
 CREATE SEQUENCE seq_message    START WITH 1 INCREMENT BY 1 NOCACHE;
-CREATE SEQUENCE seq_attach     START WITH 1 INCREMENT BY 1 NOCACHE;
+CREATE SEQUENCE seq_attach     START WITH 1 INCREMENT BY 1 NOCACHE; 
+
+
+-- =============================================
+-- 8. 테스트 데이터 추가
+-- =============================================
+
+-- 1. 회사 데이터
+INSERT INTO COMPANY (company_id, company_name, created_at) 
+VALUES (seq_company.NEXTVAL, 'kopo', SYSDATE);
+
+-- 2. 팀 데이터
+INSERT INTO TEAM (team_id, company_id, team_name, created_at) 
+VALUES (seq_team.NEXTVAL, 1, '개발팀', SYSDATE); 
+
+INSERT INTO TEAM (team_id, company_id, team_name) VALUES (2, 1, '기획팀');
+INSERT INTO TEAM (team_id, company_id, team_name) VALUES (3, 1, '디자인팀');
+INSERT INTO TEAM (team_id, company_id, team_name) VALUES (4, 1, '인사팀');
+INSERT INTO TEAM (team_id, company_id, team_name) VALUES (5, 1, '회계팀');
+INSERT INTO TEAM (team_id, company_id, team_name) VALUES (6, 1, '홍보팀');
+INSERT INTO TEAM (team_id, company_id, team_name) VALUES (7, 1, '관리자');
+
+COMMIT;
+
+-- 3. 관리자 계정
+INSERT INTO USERS (user_id, team_id, user_pw, user_name, email, role, created_at) 
+VALUES ('admin', 1, '1234', '관리자', 'admin@test.com', 'ADMIN', SYSDATE);
+
+-- 4. 일반 직원 계정
+INSERT INTO USERS (user_id, team_id, user_pw, user_name, email, role, created_at) 
+VALUES ('user01', 1, '1234', '홍길동', 'user01@test.com', 'USER', SYSDATE);
+
+INSERT INTO USERS (user_id, team_id, user_pw, user_name, email, role, created_at) 
+VALUES ('user02', 3, '1234', '고길동', 'user02@test.com', 'USER', SYSDATE);
+
+INSERT INTO USERS (user_id, team_id, user_pw, user_name, email, role, created_at) 
+VALUES('user03', 4, '1234', '박길동', 'user03@test.com', 'USER', SYSDATE);
+ 
+ INSERT INTO USERS (user_id, team_id, user_pw, user_name, email, role, created_at) 
+VALUES('user04', 5, '1234', '이길동', 'user04@test.com', 'USER', SYSDATE);
+
+INSERT INTO USERS (user_id, team_id, user_pw, user_name, email, role, created_at) 
+VALUES('user05', 6, '1234', '김길동', 'user05@test.com', 'USER', SYSDATE);
+
+INSERT INTO USERS (user_id, team_id, user_pw, user_name, email, role, created_at) 
+VALUES ('user06', 1, '1234', '정길동', 'user01@test.com', 'USER', SYSDATE);
+
+
+-- 5. 저장!
+COMMIT;
+
+SELECT *
+FROM ATTACH_FILE af 
+
+SELECT *
+FROM SCHEDULE s 
