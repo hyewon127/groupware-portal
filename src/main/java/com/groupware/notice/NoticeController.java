@@ -32,11 +32,32 @@ public class NoticeController {
 	@Autowired
 	private NoticeService noticeService;
 	
-	// 공지사항 목록 조회
+	// 공지사항 목록 조회 (검색 + 페이징)
 	@RequestMapping(value="/list.do", method=RequestMethod.GET)
-	public String list(Model model) throws Exception{
-		List<NoticeVO> list = noticeService.selectNoticeList();
+	public String list(@RequestParam(value="keyword", required=false) String keyword,
+					   @RequestParam(value="page", defaultValue="1") int page,
+					   Model model) throws Exception{
+
+		int size = 10;                       // 한 페이지에 보여줄 건수
+		int offset = (page - 1) * size;      // 건너뛸 행 수
+
+		// 검색 + 페이징된 목록
+		List<NoticeVO> list = noticeService.selectNoticeList(keyword, offset, size);
+
+		// 전체 건수 → 전체 페이지 수 계산 (올림)
+		int totalCount = noticeService.countNoticeList(keyword);
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+
+		// 전체 직원 수 (읽음 카운팅 "읽은사람/전체직원" 표시용)
+		int totalUserCnt = noticeService.selectTotalUserCnt();
+
 		model.addAttribute("list", list);
+		model.addAttribute("keyword", keyword);      // 검색창 유지용
+		model.addAttribute("page", page);            // 현재 페이지
+		model.addAttribute("totalPages", totalPages);// 전체 페이지 수
+		model.addAttribute("totalCount", totalCount);// 전체 건수
+		model.addAttribute("totalUserCnt", totalUserCnt);
+
 		return "notice/list";
 	}
 	
