@@ -16,5 +16,7 @@
 		<typeAlias alias="boardVO" type="com.groupware.board.BoardVO"/>
 		<typeAlias alias="BoardAttachFileVO" type="com.groupware.board.AttachFileVO"/>
 		<typeAlias alias="commentVO" type="com.groupware.board.CommentVO"/>
+		<typeAlias alias="scheduleVO" type="com.groupware.schedule.ScheduleVO"/>
+		<typeAlias alias="messageVO" type="com.groupware.message.MessageVO"/>
     </typeAliases>
 </configuration>

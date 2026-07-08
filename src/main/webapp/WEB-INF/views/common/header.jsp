@@ -115,7 +115,7 @@
        class="${pageTitle == '게시판' ? 'active' : ''}">
         <i class="bi bi-layout-text-window"></i> 게시판
     </a>
-    <a href="${pageContext.request.contextPath}/schedule/list.do"
+    <a href="${pageContext.request.contextPath}/schedule/calendar.do"
        class="${pageTitle == '일정관리' ? 'active' : ''}">
         <i class="bi bi-calendar3"></i> 일정관리
     </a>

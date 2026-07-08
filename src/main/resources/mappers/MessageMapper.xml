@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MyBatis Mapper 파일임을 선언 -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.groupware.message.MessageMapper">
+
+	<!-- 보낸 쪽지 목록 -->
+	<select id="selectMessageSenderList" resultType="messageVO">
+		SELECT m.msg_id,
+			   m.sender_id,
+			   m.receiver_id,
+			   u.user_name as receiver_name,
+			   m.title,
+			   m.content,
+			   m.is_read,
+			   m.sent_at
+	    FROM MESSAGE m
+	    JOIN USERS u
+	    ON m.receiver_id = u.user_id
+	    WHERE m.sender_id = #{userId}
+	    ORDER BY m.sent_at DESC
+	</select>
+	
+	<!-- 받은 쪽지 목록 -->
+	<select id="selectMessageReceiverList" resultType="messageVO">
+		SELECT m.msg_id,
+			   m.sender_id,
+			   m.receiver_id,
+			   u.user_name as sender_name,
+			   m.title,
+			   m.content,
+			   m.is_read,
+			   m.sent_at
+	    FROM MESSAGE m
+	    JOIN USERS u
+	    ON m.sender_id = u.user_id
+	    WHERE m.receiver_id = #{userId} 
+	    ORDER BY m.sent_at DESC
+	</select>
+	
+	<!-- 쪽지 작성 -->
+	<insert id="insertMessage" parameterType="messageVO">
+		<selectKey keyProperty="msgId" resultType="int" order="BEFORE">
+	        SELECT seq_message.NEXTVAL FROM DUAL
+        </selectKey>
+	    INSERT INTO MESSAGE (msg_id, sender_id, receiver_id, title, content, is_read)
+	    VALUES (#{msgId}, #{senderId}, #{receiverId}, #{title}, #{content}, 'N')
+	</insert>
+	
+	<!-- 받은 쪽지 조회 -->
+	<select id="selectMessageReceiverDetail" resultType="MessageVO">
+		SELECT m.msg_id,
+			   m.sender_id,
+			   m.receiver_id,
+			   u.user_name as sender_name,
+			   u2.user_name as receiver_name,
+			   m.title,
+			   m.content,
+			   m.is_read,
+			   m.sent_at
+	    FROM MESSAGE m
+	    JOIN USERS u
+	    ON m.sender_id = u.user_id
+	    JOIN USERS u2
+	    ON m.receiver_id = u2.user_id
+	    WHERE m.receiver_id = #{userId}  
+	    AND m.msg_id = #{msgId}
+	</select>
+	
+	<!-- 보낸 쪽지 조회 -->
+	<select id="selectMessageSenderDetail" resultType="MessageVO">
+		SELECT m.msg_id,
+				   m.sender_id,
+				   m.receiver_id,
+				   u.user_name as receiver_name,
+				   u2.user_name as sender_name,
+				   m.title,
+				   m.content,
+				   m.is_read,
+				   m.sent_at
+		    FROM MESSAGE m
+		    JOIN USERS u
+		    ON m.receiver_id = u.user_id
+		    JOIN USERS u2
+		    ON m.sender_id = u2.user_id
+		    WHERE m.sender_id = #{userId}  
+		    AND m.msg_id = #{msgId}
+	</select>
+	
+	<!-- 읽음 표시 기능 -->
+	<update id="updateMessageReadStatus" parameterType="MessageVO" >
+		UPDATE MESSAGE 
+		SET is_read = 'Y' 
+		WHERE msg_id = #{msgId} 
+		AND receiver_id = #{receiverId}
+	
+	</update>
+	
+	<!-- 쪽지 수신인 이름 검색용(자동완성) -->
+	<select id="selectReceiverName" parameterType="String" resultType="com.groupware.user.UserVO">
+	    SELECT user_id   as userId,
+	           user_name as userName
+	    FROM USERS
+	    WHERE user_name LIKE '%' || #{userName} || '%'
+	</select>
+	
+	<!-- 회수 기능할 때 삭제 기능 구현 지금은 db 컬럼 추가 기능 구현 해야함으로 기능 제외함 -->
+	<!--  보낸 쪽지 삭제 
+	 <update id="deleteMessageBySender" parameterType="messageVO">
+	  	UPDATE MESSAGE
+	  	SET deleted_at = SYSDATE
+	  	WHERE msg_id = #{msgId}
+	  	AND sender_id = #{senderId}
+	 </update>-->
+	 
+	<!-- 받은 쪽지 삭제  
+	 <update id="deleteMessageByReceiver" parameterType="messageVO">
+	 	UPDATE MESSAGE
+	  	SET deleted_at = SYSDATE
+	  	WHERE msg_id = #{msgId}
+	  	AND receiver_id = #{receiverId}
+	 </update>--> 
+		
+</mapper>
