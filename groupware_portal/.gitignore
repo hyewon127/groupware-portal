@@ -1,0 +1,9 @@
+# 환경변수
+.env
+ 
+# Oracle 데이터 볼륨
+oracle-data/
+
+# Log
+*.log
+ 
