@@ -23,7 +23,7 @@
 		</div>
 
 		<!-- 본문 -->
-		<div class="mb-4" style="min-height: 200px; white-space: pre-wrap;">
+		<div class="mb-4" style="min-height: 200px; white-space: left;">
 			${notice.content}</div>
 
 		<!-- 버튼 -->

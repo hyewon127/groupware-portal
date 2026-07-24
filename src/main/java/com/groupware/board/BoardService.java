@@ -6,12 +6,18 @@ import org.apache.ibatis.annotations.Param;
 
 
 public interface BoardService {
-		// 게시판 목족 조회(전체 조회)
-		List<BoardVO> selectAllBoardList();
-		
-		// 게시판 목록 조회(팀별로 조회)
-		List<BoardVO> BoardList(int teamId);
-		
+		// 게시판 목록 조회(전체 조회 - 관리자용) : 검색 + 페이징
+		List<BoardVO> selectAllBoardList(String keyword, int offset, int size);
+
+		// 게시판 목록 조회(팀별로 조회) : 검색 + 페이징
+		List<BoardVO> BoardList(int teamId, String keyword, int offset, int size);
+
+		// 전체 게시글 총 개수(검색 반영)
+		int countAllBoardList(String keyword);
+
+		// 팀별 게시글 총 개수(검색 반영)
+		int countBoardList(int teamId, String keyword);
+
 		// 팀 목록 조회
 		List<BoardVO> selectTeamList();
 		

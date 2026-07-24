@@ -31,10 +31,11 @@ public class BoardController {
 	@Autowired
 	private BoardService boardService;
 	
+
 	// 경로에 대한 key 값 resource 에 추가하기 
 	@Resource(name = "propertiesService")
 	private EgovPropertyService propertiesService;
-	
+
 	// 게시판 목록 조회(로그인한 사용자가 속한 팀의 게시물만 조회할 수 있음) : 검색 + 페이징
 	@RequestMapping(value="/list.do", method=RequestMethod.GET)
 	public String boardList(Model model,

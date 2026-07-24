@@ -41,6 +41,27 @@ public class LoginController {
 		}
 	}
 	
+	// 비밀번호 찾기(재설정) 처리(POST)
+	// 아이디 + 이메일이 일치하는 계정이면 새 비밀번호로 재설정해줌
+	@RequestMapping(value = "/findPw.do", method=RequestMethod.POST)
+	public String findPw(@RequestParam String userId,
+						  @RequestParam String email,
+						  @RequestParam String newPw,
+						  Model model) throws Exception {
+
+		// 아이디로 사용자 조회
+		UserVO user = userService.selectUserById(userId);
+
+		// 아이디가 존재하고 이메일까지 일치할 때만 재설정 허용
+		if (user != null && email.equals(user.getEmail())) {
+			userService.resetPassword(userId, email, newPw);
+			model.addAttribute("msg", "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요.");
+		} else {
+			model.addAttribute("msg", "아이디와 이메일이 일치하는 계정이 없습니다.");
+		}
+		return "user/login"; // 결과 메시지와 함께 로그인 페이지로
+	}
+
 	// 로그아웃
 	@RequestMapping(value = "/logout.do")
 	public String logout(HttpSession session) {
