@@ -11,9 +11,21 @@ public class NoticeServiceImpl implements NoticeService {
 	private NoticeMapper noticeMapper;
 
 	@Override
-	public List<NoticeVO> selectNoticeList() {
-		// 공지사항 목록 조회
-		return noticeMapper.selectNoticeList();
+	public List<NoticeVO> selectNoticeList(String keyword, int offset, int size) {
+		// 공지사항 목록 조회 (검색 + 페이징)
+		return noticeMapper.selectNoticeList(keyword, offset, size);
+	}
+
+	@Override
+	public int countNoticeList(String keyword) {
+		// 검색 조건에 맞는 공지 총 개수
+		return noticeMapper.countNoticeList(keyword);
+	}
+
+	@Override
+	public int selectTotalUserCnt() {
+		// 전체 직원 수
+		return noticeMapper.selectTotalUserCnt();
 	}
 
 	@Override

@@ -17,7 +17,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.groupware.board.AttachFileVO;
 import com.groupware.user.UserVO;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,34 +29,55 @@ public class BoardController {
 	@Autowired
 	private BoardService boardService;
 	
-	// 게시판 목록 조회(로그인한 사용자가 속한 팀의 게시물만 조회할 수 있음) 
+	// 게시판 목록 조회(로그인한 사용자가 속한 팀의 게시물만 조회할 수 있음) : 검색 + 페이징
 	@RequestMapping(value="/list.do", method=RequestMethod.GET)
-	public String boardList(Model model, 
+	public String boardList(Model model,
 							HttpSession session,
-							// 파라미터에서 teamId 를 받아오고, 없을 경우 디폴트로 -1를 입력해서 teamId로 받음. 
-							@RequestParam(value="teamId", defaultValue = "-1") int teamId) throws Exception{
-		
+							// 파라미터에서 teamId 를 받아오고, 없을 경우 디폴트로 -1를 입력해서 teamId로 받음.
+							@RequestParam(value="teamId", defaultValue = "-1") int teamId,
+							@RequestParam(value="keyword", required=false) String keyword,
+							@RequestParam(value="page", defaultValue="1") int page) throws Exception{
+
 		// session 에서 로그인 사용자 정보만 꺼냄
 		UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 		List<BoardVO> list;
-		
+
+		int size = 10;                     // 한 페이지에 보여줄 건수
+		int offset = (page - 1) * size;    // 건너뛸 행 수
+		int totalCount;                    // 검색 조건에 맞는 전체 건수
+
 		// 관리자, 일반 직원 목록 구분 (관리자는 7)
 		if(loginUser.getTeamId() == 7) {
 			if(teamId == -1) {
-				list = boardService.selectAllBoardList();
+				// 전체 팀 게시글
+				list = boardService.selectAllBoardList(keyword, offset, size);
+				totalCount = boardService.countAllBoardList(keyword);
 			} else {
-				list = boardService.BoardList(teamId);
+				// 선택한 팀 게시글
+				list = boardService.BoardList(teamId, keyword, offset, size);
+				totalCount = boardService.countBoardList(teamId, keyword);
 			}
 			// 팀 목록 확인(관리자만)
 			List<BoardVO> teamList = boardService.selectTeamList();
 			model.addAttribute("teamList", teamList);
 			model.addAttribute("selectedTeamId", teamId);
 		} else {
-			// 일반 직원
-			list = boardService.BoardList(loginUser.getTeamId());
+			// 일반 직원 - 본인 팀 게시글만
+			int myTeamId = loginUser.getTeamId();
+			list = boardService.BoardList(myTeamId, keyword, offset, size);
+			totalCount = boardService.countBoardList(myTeamId, keyword);
+			// 페이징/검색 링크에서 teamId 유지용 (일반 직원은 본인 팀 고정)
+			model.addAttribute("selectedTeamId", myTeamId);
 		}
-		
+
+		// 전체 페이지 수 계산 (올림)
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+
 		model.addAttribute("list", list);
+		model.addAttribute("keyword", keyword);        // 검색창 유지용
+		model.addAttribute("page", page);              // 현재 페이지
+		model.addAttribute("totalPages", totalPages);  // 전체 페이지 수
+		model.addAttribute("totalCount", totalCount);  // 전체 건수
 		return "board/list";
 	}
 	

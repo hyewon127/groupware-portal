@@ -3,3 +3,13 @@
 .classpath
 .project
 .factorypath
+
+# 설정 파일 및 샘플 이미지 제외
+src/main/resources/egovframework/spring/
+src/main/resources/egovframework/message/
+src/main/webapp/WEB-INF/config/egovframework/
+src/main/webapp/css/
+src/main/webapp/images/
+src/main/resources/log4j2.xml
+src/main/resources/db/sampledb.sql
+src/main/webapp/META-INF/MANIFEST.MF

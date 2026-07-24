@@ -14,9 +14,21 @@ public class BoardServiceImpl implements BoardService {
 	private BoardMapper boardMapper;
 
 	@Override
-	public List<BoardVO> BoardList(int teamId) {
-		// 게시판 목록 조회(팀별)
-		return boardMapper.BoardList(teamId);
+	public List<BoardVO> BoardList(int teamId, String keyword, int offset, int size) {
+		// 게시판 목록 조회(팀별) : 검색 + 페이징
+		return boardMapper.BoardList(teamId, keyword, offset, size);
+	}
+
+	@Override
+	public int countAllBoardList(String keyword) {
+		// 전체 게시글 총 개수(검색 반영)
+		return boardMapper.countAllBoardList(keyword);
+	}
+
+	@Override
+	public int countBoardList(int teamId, String keyword) {
+		// 팀별 게시글 총 개수(검색 반영)
+		return boardMapper.countBoardList(teamId, keyword);
 	}
 
 	@Override
@@ -63,7 +75,7 @@ public class BoardServiceImpl implements BoardService {
 	public AttachFileVO selectAttachFile(int fileId) {
 		// 파일 조회
 		return boardMapper.selectAttachFile(fileId);
-	}
+	} 
 
 	@Override
 	public void deleteAttachFile(int fileId) {
@@ -73,9 +85,9 @@ public class BoardServiceImpl implements BoardService {
 	}
 
 	@Override
-	public List<BoardVO> selectAllBoardList() {
-		// 게시물 목록 조회(전체)
-		return boardMapper.selectAllBoardList();
+	public List<BoardVO> selectAllBoardList(String keyword, int offset, int size) {
+		// 게시물 목록 조회(전체) : 검색 + 페이징
+		return boardMapper.selectAllBoardList(keyword, offset, size);
 	}
 
 	@Override

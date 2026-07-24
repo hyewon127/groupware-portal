@@ -31,6 +31,22 @@
     </c:if>
 </div>
 
+<!-- 검색 폼: 제목/작성자 검색. teamId 는 hidden 으로 유지(현재 팀 탭 고정) -->
+<form class="row g-2 mb-3 justify-content-end" method="get"
+      action="${pageContext.request.contextPath}/board/list.do">
+    <input type="hidden" name="teamId" value="${selectedTeamId}">
+    <div class="col-auto">
+        <input type="text" name="keyword" class="form-control form-control-sm"
+               style="width:220px;" placeholder="제목 또는 작성자 검색"
+               value="${keyword}">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-dark">
+            <i class="bi bi-search"></i> 검색
+        </button>
+    </div>
+</form>
+
 <!-- 게시판 테이블 -->
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
@@ -49,7 +65,10 @@
                     <c:when test="${empty list}">
                         <tr>
                             <td colspan="5" class="text-center py-4 text-muted">
-                                등록된 게시글이 없습니다.
+                                <c:choose>
+                                    <c:when test="${not empty keyword}">'${keyword}' 검색 결과가 없습니다.</c:when>
+                                    <c:otherwise>등록된 게시글이 없습니다.</c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:when>
@@ -59,7 +78,15 @@
                                 onclick="location.href='${pageContext.request.contextPath}/board/detail.do?boardId=${board.boardId}'">
                                 <td class="text-center">${board.boardId}</td>
                                 <td>${board.teamName}</td>
-                                <td>${board.title}</td>
+                                <td>
+                                    ${board.title}
+                                    <%-- 댓글이 있으면 [댓글 n] 표시 --%>
+                                    <c:if test="${board.commentCnt > 0}">
+                                        <span class="text-danger small">[댓글 ${board.commentCnt}]</span>
+                              		</c:if>
+                                    <%-- 첨부파일이 있으면 클립 이모지 표시 --%>
+                                    <c:if test="${board.attachCnt > 0}"> 🗂️ </c:if>
+                                </td>
                                 <td class="text-center">${board.writerName}</td>
                                 <td class="text-center">
                                     <fmt:formatDate value="${board.createdAt}" pattern="yyyy.MM.dd"/>
@@ -72,5 +99,28 @@
         </table>
     </div>
 </div>
+
+<!-- ===================== 페이지네이션 ===================== -->
+<%-- teamId 와 keyword 를 함께 넘겨 현재 팀/검색 상태를 유지 --%>
+<c:if test="${totalPages > 1}">
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center mb-0">
+            <li class="page-item ${page <= 1 ? 'disabled' : ''}">
+                <a class="page-link"
+                   href="?teamId=${selectedTeamId}&keyword=${keyword}&page=${page - 1}">이전</a>
+            </li>
+            <c:forEach var="p" begin="1" end="${totalPages}">
+                <li class="page-item ${p == page ? 'active' : ''}">
+                    <a class="page-link"
+                       href="?teamId=${selectedTeamId}&keyword=${keyword}&page=${p}">${p}</a>
+                </li>
+            </c:forEach>
+            <li class="page-item ${page >= totalPages ? 'disabled' : ''}">
+                <a class="page-link"
+                   href="?teamId=${selectedTeamId}&keyword=${keyword}&page=${page + 1}">다음</a>
+            </li>
+        </ul>
+    </nav>
+</c:if>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

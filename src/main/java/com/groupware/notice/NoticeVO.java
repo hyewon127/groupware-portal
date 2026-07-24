@@ -20,5 +20,8 @@ public class NoticeVO {
     private int readCnt;      // 읽은 사람 수
     private int totalCnt;     // 전체 사람 수
     private boolean isRead;   // 내가 읽었는지 여부
+
+    // 목록에서 첨부파일 유무 표시(이모지)용 — 첨부파일 개수
+    private int attachCnt;
 	
 }

@@ -6,6 +6,19 @@
 <!-- FullCalendar JS (v6 글로벌 번들 — CSS 가 JS 안에 포함되어 별도 CSS 불필요) -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
+<!-- 일정 띠(block) 를 더 매끄럽게: 둥근 모서리 + 여백 + 커서 -->
+<style>
+    .fc-daygrid-event {
+        border-radius: 4px;
+        padding: 1px 4px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+    .fc-daygrid-event:hover { opacity: 0.85; }
+    /* 오늘 날짜 셀 배경 살짝 강조 */
+    .fc .fc-daygrid-day.fc-day-today { background-color: #fff5f5; }
+</style>
+
 <!-- 페이지 타이틀 + 일정추가 버튼 -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="fw-bold mb-0">일정관리</h4>
@@ -160,6 +173,10 @@ document.addEventListener('DOMContentLoaded', function() {
         height: 650,
         // 월간 뷰에서도 시간 표시
         displayEventTime: true,
+        // 이벤트를 점(dot)이 아니라 띠(막대/block) 형태로 표시 ★
+        eventDisplay: 'block',
+        // 하루에 일정이 많으면 "+N개 더보기" 로 접어서 표시 (UI 깔끔하게)
+        dayMaxEvents: true,
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',

@@ -8,12 +8,23 @@ import org.egovframe.rte.psl.dataaccess.mapper.Mapper;
 
 @Mapper
 public interface BoardMapper {
-	// 게시판 목족 조회(전체 조회)
-	List<BoardVO> selectAllBoardList();
-	
-	// 게시판 목록 조회(팀별로 조회)
-	List<BoardVO> BoardList(int teamId);
-	
+	// 게시판 목록 조회(전체 조회 - 관리자용) : 검색 + 페이징
+	List<BoardVO> selectAllBoardList(@Param("keyword") String keyword,
+									 @Param("offset") int offset,
+									 @Param("size") int size);
+
+	// 게시판 목록 조회(팀별로 조회) : 검색 + 페이징
+	List<BoardVO> BoardList(@Param("teamId") int teamId,
+							@Param("keyword") String keyword,
+							@Param("offset") int offset,
+							@Param("size") int size);
+
+	// 전체 게시글 총 개수(검색 반영) - 관리자 전체 목록 페이징용
+	int countAllBoardList(@Param("keyword") String keyword);
+
+	// 팀별 게시글 총 개수(검색 반영) - 팀 목록 페이징용
+	int countBoardList(@Param("teamId") int teamId, @Param("keyword") String keyword);
+
 	// 팀 목록 조회
 	List<BoardVO> selectTeamList();
 	

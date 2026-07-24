@@ -35,7 +35,7 @@ public class MessageController {
 	// 경로에 대한 key 값 resource 에 추가하기 
 	@Resource(name = "propertiesService")
 	private EgovPropertyService propertiesService;
-	
+
 	// 받은 쪽지, 보낸 쪽지 화면 (페이징)
 	@RequestMapping(value = "/list.do", method=RequestMethod.GET)
 	public String list(@RequestParam(defaultValue = "received") String type,
