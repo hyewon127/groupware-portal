@@ -5,10 +5,12 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.egovframe.rte.fdl.property.EgovPropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,6 +33,10 @@ public class NoticeController {
 	
 	@Autowired
 	private NoticeService noticeService;
+
+	// 경로에 대한 key 값 resource 에 추가하기 
+	@Resource(name = "propertiesService")
+	private EgovPropertyService propertiesService;
 	
 	// 공지사항 목록 조회 (검색 + 페이징)
 	@RequestMapping(value="/list.do", method=RequestMethod.GET)
@@ -87,7 +93,7 @@ public class NoticeController {
         if (uploadFiles != null && uploadFiles.length > 0) {
 
             // 3-1. 서버에서 파일을 저장할 디렉토리 경로 가져오기
-            String uploadDir = request.getServletContext().getRealPath("/upload/notice");
+        	String uploadDir = propertiesService.getString("uploadBaseDir") + File.separator + "notice";
 
             // 3-2. 디렉토리가 없으면 자동 생성
             File dir = new File(uploadDir);
@@ -188,7 +194,7 @@ public class NoticeController {
 	    if (uploadFiles != null && uploadFiles.length > 0) {
 	    	 System.out.println("===== 파일 처리 진입");
 	        
-	        String uploadDir = request.getServletContext().getRealPath("/upload/notice");
+	    	 String uploadDir = propertiesService.getString("uploadBaseDir") + File.separator + "notice";;
 	        File dir = new File(uploadDir);
 	        if (!dir.exists()) {
 	            dir.mkdirs();
