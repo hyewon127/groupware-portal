@@ -5,10 +5,12 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.egovframe.rte.fdl.property.EgovPropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,11 +34,36 @@ public class NoticeController {
 	@Autowired
 	private NoticeService noticeService;
 	
-	// 공지사항 목록 조회
+	// 경로에 대한 key 값 resource 에 추가하기 
+	@Resource(name = "propertiesService")
+	private EgovPropertyService propertiesService;
+	
+	// 공지사항 목록 조회 (검색 + 페이징)
 	@RequestMapping(value="/list.do", method=RequestMethod.GET)
-	public String list(Model model) throws Exception{
-		List<NoticeVO> list = noticeService.selectNoticeList();
+	public String list(@RequestParam(value="keyword", required=false) String keyword,
+					   @RequestParam(value="page", defaultValue="1") int page,
+					   Model model) throws Exception{
+
+		int size = 10;                       // 한 페이지에 보여줄 건수
+		int offset = (page - 1) * size;      // 건너뛸 행 수
+
+		// 검색 + 페이징된 목록
+		List<NoticeVO> list = noticeService.selectNoticeList(keyword, offset, size);
+
+		// 전체 건수 → 전체 페이지 수 계산 (올림)
+		int totalCount = noticeService.countNoticeList(keyword);
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+
+		// 전체 직원 수 (읽음 카운팅 "읽은사람/전체직원" 표시용)
+		int totalUserCnt = noticeService.selectTotalUserCnt();
+
 		model.addAttribute("list", list);
+		model.addAttribute("keyword", keyword);      // 검색창 유지용
+		model.addAttribute("page", page);            // 현재 페이지
+		model.addAttribute("totalPages", totalPages);// 전체 페이지 수
+		model.addAttribute("totalCount", totalCount);// 전체 건수
+		model.addAttribute("totalUserCnt", totalUserCnt);
+
 		return "notice/list";
 	}
 	
@@ -66,7 +93,7 @@ public class NoticeController {
         if (uploadFiles != null && uploadFiles.length > 0) {
 
             // 3-1. 서버에서 파일을 저장할 디렉토리 경로 가져오기
-            String uploadDir = request.getServletContext().getRealPath("/upload/notice");
+        	String uploadDir = propertiesService.getString("uploadBaseDir") + File.separator + "notice";
 
             // 3-2. 디렉토리가 없으면 자동 생성
             File dir = new File(uploadDir);
@@ -112,7 +139,7 @@ public class NoticeController {
 	
 	// 상세 조회
 	@RequestMapping(value = "/detail.do", method=RequestMethod.GET)
-	public String datail(@RequestParam int noticeId,
+	public String detail(@RequestParam int noticeId,
 						HttpSession session,
 						Model model) throws Exception{
 		// 조회수 증가
@@ -167,7 +194,7 @@ public class NoticeController {
 	    if (uploadFiles != null && uploadFiles.length > 0) {
 	    	 System.out.println("===== 파일 처리 진입");
 	        
-	        String uploadDir = request.getServletContext().getRealPath("/upload/notice");
+	    	 String uploadDir = propertiesService.getString("uploadBaseDir") + File.separator + "notice";;
 	        File dir = new File(uploadDir);
 	        if (!dir.exists()) {
 	            dir.mkdirs();
