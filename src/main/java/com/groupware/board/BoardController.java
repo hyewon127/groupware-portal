@@ -7,10 +7,12 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.egovframe.rte.fdl.property.EgovPropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,34 +31,59 @@ public class BoardController {
 	@Autowired
 	private BoardService boardService;
 	
-	// 게시판 목록 조회(로그인한 사용자가 속한 팀의 게시물만 조회할 수 있음) 
+	// 경로에 대한 key 값 resource 에 추가하기 
+	@Resource(name = "propertiesService")
+	private EgovPropertyService propertiesService;
+	
+	// 게시판 목록 조회(로그인한 사용자가 속한 팀의 게시물만 조회할 수 있음) : 검색 + 페이징
 	@RequestMapping(value="/list.do", method=RequestMethod.GET)
-	public String boardList(Model model, 
+	public String boardList(Model model,
 							HttpSession session,
-							// 파라미터에서 teamId 를 받아오고, 없을 경우 디폴트로 -1를 입력해서 teamId로 받음. 
-							@RequestParam(value="teamId", defaultValue = "-1") int teamId) throws Exception{
-		
+							// 파라미터에서 teamId 를 받아오고, 없을 경우 디폴트로 -1를 입력해서 teamId로 받음.
+							@RequestParam(value="teamId", defaultValue = "-1") int teamId,
+							@RequestParam(value="keyword", required=false) String keyword,
+							@RequestParam(value="page", defaultValue="1") int page) throws Exception{
+
 		// session 에서 로그인 사용자 정보만 꺼냄
 		UserVO loginUser = (UserVO) session.getAttribute("loginUser");
 		List<BoardVO> list;
-		
+
+		int size = 10;                     // 한 페이지에 보여줄 건수
+		int offset = (page - 1) * size;    // 건너뛸 행 수
+		int totalCount;                    // 검색 조건에 맞는 전체 건수
+
 		// 관리자, 일반 직원 목록 구분 (관리자는 7)
 		if(loginUser.getTeamId() == 7) {
 			if(teamId == -1) {
-				list = boardService.selectAllBoardList();
+				// 전체 팀 게시글
+				list = boardService.selectAllBoardList(keyword, offset, size);
+				totalCount = boardService.countAllBoardList(keyword);
 			} else {
-				list = boardService.BoardList(teamId);
+				// 선택한 팀 게시글
+				list = boardService.BoardList(teamId, keyword, offset, size);
+				totalCount = boardService.countBoardList(teamId, keyword);
 			}
 			// 팀 목록 확인(관리자만)
 			List<BoardVO> teamList = boardService.selectTeamList();
 			model.addAttribute("teamList", teamList);
 			model.addAttribute("selectedTeamId", teamId);
 		} else {
-			// 일반 직원
-			list = boardService.BoardList(loginUser.getTeamId());
+			// 일반 직원 - 본인 팀 게시글만
+			int myTeamId = loginUser.getTeamId();
+			list = boardService.BoardList(myTeamId, keyword, offset, size);
+			totalCount = boardService.countBoardList(myTeamId, keyword);
+			// 페이징/검색 링크에서 teamId 유지용 (일반 직원은 본인 팀 고정)
+			model.addAttribute("selectedTeamId", myTeamId);
 		}
-		
+
+		// 전체 페이지 수 계산 (올림)
+		int totalPages = (int) Math.ceil((double) totalCount / size);
+
 		model.addAttribute("list", list);
+		model.addAttribute("keyword", keyword);        // 검색창 유지용
+		model.addAttribute("page", page);              // 현재 페이지
+		model.addAttribute("totalPages", totalPages);  // 전체 페이지 수
+		model.addAttribute("totalCount", totalCount);  // 전체 건수
 		return "board/list";
 	}
 	
@@ -101,7 +128,7 @@ public class BoardController {
 		        if (uploadFiles != null && uploadFiles.length > 0) {
 		
 		            // 3-1. 서버에서 파일을 저장할 디렉토리 경로 가져오기
-		            String uploadDir = request.getServletContext().getRealPath("/upload/board");
+		        	String uploadDir = propertiesService.getString("uploadBaseDir") + File.separator + "board";
 		
 		            // 3-2. 디렉토리가 없으면 자동 생성
 		            File dir = new File(uploadDir);
@@ -221,7 +248,7 @@ public class BoardController {
 	    if (uploadFiles != null && uploadFiles.length > 0) {
 	    	 System.out.println("===== 파일 처리 진입");
 	        
-	        String uploadDir = request.getServletContext().getRealPath("/upload/board");
+	    	String uploadDir = propertiesService.getString("uploadBaseDir") + File.separator + "board";
 	        File dir = new File(uploadDir);
 	        if (!dir.exists()) {
 	            dir.mkdirs();
