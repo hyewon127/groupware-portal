@@ -7,10 +7,12 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.egovframe.rte.fdl.property.EgovPropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +32,10 @@ public class MessageController {
 	@Autowired
 	private MessageService messageService;
 	
+	// 경로에 대한 key 값 resource 에 추가하기 
+	@Resource(name = "propertiesService")
+	private EgovPropertyService propertiesService;
+
 	// 받은 쪽지, 보낸 쪽지 화면 (페이징)
 	@RequestMapping(value = "/list.do", method=RequestMethod.GET)
 	public String list(@RequestParam(defaultValue = "received") String type,
@@ -166,7 +172,7 @@ public class MessageController {
 	    if (uploadFiles != null && uploadFiles.length > 0) {
 
 	        // 저장 디렉토리 (/upload/message). 공지/게시판과 동일한 패턴
-	        String uploadDir = request.getServletContext().getRealPath("/upload/message");
+	    	String uploadDir = propertiesService.getString("uploadBaseDir") + File.separator + "message";
 	        File dir = new File(uploadDir);
 	        if (!dir.exists()) {
 	            dir.mkdirs();
